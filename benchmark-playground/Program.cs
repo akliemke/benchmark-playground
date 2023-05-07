@@ -8,8 +8,6 @@ namespace benchmark_playground
         static void Main(string[] args)
         {
             BenchmarkRunner.Run<BenchAsync>();
-
-            Console.WriteLine("Hello, World!");
         }
     }
 
@@ -17,10 +15,30 @@ namespace benchmark_playground
     public class BenchAsync
     {
         [Benchmark]
-        public async Task<string> AsyncMethod()
+        public async Task WithTaskRunOutside()
         {
-            await Task.Delay(1000);
-            return "Hello, World!";
+            await Task.Run( ()  =>
+            {
+                for (var i = 0; i < 1000; i++)
+                {
+                    Task.Delay(1000);
+                }
+            });
         }
+
+        [Benchmark(Baseline = true)]        
+        public async Task WithTaskRunInside()
+        {
+            await Task.Run(() => CPUBoundWork());
+        }
+
+        public void CPUBoundWork()
+        {
+            for(var i = 0;i < 1000; i++)
+            {
+                Task.Delay(1000);
+            }
+        }
+        
     }
 }
