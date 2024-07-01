@@ -4,6 +4,7 @@
     {
         public static ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
         private Dictionary<string, string> cache = new Dictionary<string, string>();
+        public static object _locker = new object();
 
         public Dictionary<string, string> Cache
         {
@@ -11,12 +12,15 @@
             {
                 try
                 {
-                    _lock.EnterReadLock();
-                    return cache;
+                    //_lock.EnterReadLock();
+                    lock (_lock)
+                    {
+                        return cache;
+                    }
                 }
                 finally
                 {
-                    _lock.ExitReadLock();
+                    //_lock.ExitReadLock();
                 }
             }
         }
@@ -34,18 +38,21 @@
         {
             try
             {
-                _lock.EnterWriteLock();
-                cache = new Dictionary<string, string>();
-                cache.Add("key1", "1");
-                cache.Add("key2", "2");
-                cache.Add("key3", "3");
-                cache.Add("key4", "4");
-                cache.Add("key5", "5");
-                Thread.Sleep(10);
+                //_lock.EnterWriteLock();
+                lock (_lock)
+                {
+                    cache = new Dictionary<string, string>();
+                    cache.Add("key1", "1");
+                    cache.Add("key2", "2");
+                    cache.Add("key3", "3");
+                    cache.Add("key4", "4");
+                    cache.Add("key5", "5");
+                    Thread.Sleep(10);
+                }
             }
             finally
             {
-                _lock.ExitWriteLock();
+                //_lock.ExitWriteLock();
             }
 
         }
